@@ -89,6 +89,83 @@ def S_box(R_i):
     
     return R_i
 
+def count_bit_diffs(a, b):
+    """Count the number of different bits"""
+    return bin(a ^ b).count('1')
+
+def test_s_box_properties(S_box_func, s_boxes):
+    test_passed = True
+
+    # ①:输出不是输入的线性和仿射函数
+    for x in range(64):
+        for y in range(64):
+            if S_box_func(x ^ y) == S_box_func(x) ^ S_box_func(y):
+                print(f"非线性未通过")
+                test_passed = False
+                break
+
+    for c in range(1, 64):  # 常数c从1到63
+        constant = None
+        for x in range(64):
+            result = S_box_func(x) ^ S_box_func(x ^ c)
+            if constant is None:
+                constant = result  # 第一次设定比较标准
+            elif result != constant:
+                break  
+        else:
+            # 如果完成了所有x的遍历且没有中断，则S盒可能是仿射的
+            print(f"S盒可能是仿射的，c={c:06b}")
+            test_passed = False
+
+    # ②:任意改变输入中的一位，输出至少有两位发生变化
+    for i in range(64):  # 对于所有64种可能的6位输入
+        original_input = i
+        original_output = S_box_func(original_input)
+
+        for j in range(6):  # 改变输入的每一位
+            modified_input = original_input ^ (1 << j)
+            modified_output = S_box_func(modified_input)
+
+            if count_bit_diffs(original_output, modified_output) < 2:
+                print(f"②未通过: 输入 {original_input:06b} 和 {modified_input:06b}")
+                test_passed = False
+
+    # ③:对于任何S盒和任何输入x，S(x)和S(x⊕001100)至少有两位不同，这里x是一个6位的二进制串
+    for i in range(64): 
+        original_input = i
+        original_output = S_box_func(original_input)
+        modified_input = original_input ^ 0b001100  # XOR with 001100
+        modified_output = S_box_func(modified_input)
+
+        if count_bit_diffs(original_output, modified_output) < 2:
+            print(f"③未通过: 输入 {original_input:06b} 和 {modified_input:06b}")
+            test_passed = False
+    
+    # ④:对于任何S盒和任何输入x，以及y,z∈GF(2)，S(x)≠S(x⊕11yz00)，这里x是一个6位的二进制串
+    for x in range(64):  
+        for y in range(2):  # y为0或1
+            for z in range(2):  # z为0或1
+                x_prime = x ^ (0b110000 | (y << 3 | z << 2))
+                if S_box_func(x) == S_box_func(x_prime):
+                    print(f"④未通过: 输入 {x:06b} 和 {x_prime:06b}")
+                    test_passed = False
+
+    # ⑤:保持输入中的1位不变，其余5位变化，输出中的0和1的个数接近相等
+    for fixed_bit in range(6):  # 对于每个固定位
+        count_0 = 0
+        count_1 = 0
+        for x in range(64):  
+            if (x >> fixed_bit) & 1 == 0:  # 如果固定位是0
+                if S_box_func(x) & 1 == 0:  # 如果输出的最低位是0
+                    count_0 += 1
+                else:
+                    count_1 += 1
+        if abs(count_0 - count_1) > 2:  # 根据某个阈值2判断是否平衡
+            print(f"⑤未通过: 固定位 {fixed_bit}")
+            test_passed = False
+
+    return test_passed
+
 
 # F round function   
 def Func(R_i, K_i):
@@ -240,3 +317,11 @@ if decrypted_data_binary == input_data_binary.replace(" ", ""):
 else:
     print("error when testing")
     print("decrypted_data_binary：", decrypted_data_binary)
+
+
+
+# test of S box
+if test_s_box_properties(S_box, init.Sboxes):
+    print("Successful")
+else:
+    print("Error")
