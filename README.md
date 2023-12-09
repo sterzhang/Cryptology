@@ -1,6 +1,12 @@
 # Cryptology
 Jianshu Zhang's cryptological experiments
 
-## Experiment1：DES Algorithm
+## small experiment
+  - miller_rabin.py
+  - montgomery.py
+  - rsa.py
+  - sm3.py
 
-## Experiment2：AES Algorithm + different encryption modes
+## DES Algorithm (Experiment1)
+
+## AES Algorithm + different encryption modes (Experiment2)
