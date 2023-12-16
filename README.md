@@ -15,3 +15,9 @@ Jianshu Zhang's cryptological experiments 😊
 ## 🔐  AES Algorithm + different encryption modes (Experiment2)
   - AES.py
   - report2.pdf
+
+## 👑  ZUC Algorithm + LFSR (Experiment3)
+  - ZUC-main.py
+  - ZUC-components.py
+  - LFSR.py
+  - report3.pdf
